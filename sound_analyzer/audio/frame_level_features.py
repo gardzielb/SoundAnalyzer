@@ -1,11 +1,23 @@
 import numpy as np
 
 
-def audio_to_frames(audio: np.ndarray, sample_rate: int, frame_len_ms: int) -> tuple[np.ndarray, int]:
-	samples_per_frame = int(frame_len_ms * sample_rate / 1000)
-	last_idx = (audio.shape[0] // samples_per_frame) * samples_per_frame
-	frames = audio[:last_idx].reshape(-1, samples_per_frame)
-	return frames, samples_per_frame
+def audio_to_frames(audio: np.ndarray, sample_rate: int, frame_len_ms: int, overlap_ms = 0) -> tuple[np.ndarray, int]:
+	samples_per_frame = int(round(frame_len_ms * sample_rate / 1000))
+	frame_stride = int(round((frame_len_ms - overlap_ms) * sample_rate / 1000))
+	n_frames = int(np.ceil(float(np.abs(len(audio) - samples_per_frame)) / frame_stride))
+
+	padded_signal_len = n_frames * frame_stride + samples_per_frame
+	padded_signal = np.append(audio, np.zeros(padded_signal_len - len(audio)))
+
+	i1 = np.tile(np.arange(0, samples_per_frame), (n_frames, 1))
+	i2 = np.tile(np.arange(0, n_frames * frame_stride, frame_stride), (samples_per_frame, 1)).T
+	indices = i1 + i2
+
+	return padded_signal[indices.astype(np.int32, copy = False)], samples_per_frame
+
+	# last_idx = (audio.shape[0] // samples_per_frame) * samples_per_frame
+	# frames = audio[:last_idx].reshape(-1, samples_per_frame)
+	# return frames, samples_per_frame
 
 
 def extract_frames_ste(audio_frames: np.ndarray, samples_per_frame: int) -> np.ndarray:

@@ -25,7 +25,7 @@ class FigureWidget(FigureCanvasQTAgg):
 
 	def add_plot(self, data: np.ndarray, sample_rate: int, title: str, silence_ranges: list[tuple[int, int]]):
 		if self.idx < self.n_plots:
-			plot_sound(self.figure.axes[self.idx], data, sample_rate, title, silence_ranges)
+			plot_sound(data, sample_rate, title, silence_ranges = silence_ranges, axes = self.figure.axes[self.idx])
 			self.idx += 1
 
 	def reset(self):
